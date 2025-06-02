@@ -41,6 +41,31 @@
   margin-bottom: 2rem;
 }
 
+.disabled-input {
+  opacity: 0.5;
+  pointer-events: none;
+  background: rgba(17, 24, 39, 0.3) !important;
+  border-color: rgba(0, 255, 195, 0.1) !important;
+}
+
+.disabled-label {
+  opacity: 0.5;
+  color: #ccc !important;
+}
+
+.planet-input {
+  background: rgba(17, 24, 39, 0.95) !important;
+  border: 1px solid rgba(0, 255, 195, 0.3) !important;
+  color: #ffffff !important;
+}
+
+.next-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(0, 255, 195, 0.3) !important;
+  border-color: rgba(0, 255, 195, 0.3) !important;
+}
+
 .cyber-title:hover {
   color: #00d1ff;
   text-shadow: 0 0 20px rgba(0, 209, 255, 0.8), 0 0 40px rgba(0, 209, 255, 0.4);
