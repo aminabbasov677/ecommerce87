@@ -1,18 +1,19 @@
 import React, { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useCart } from "../context/CartContext";
 import { useFavorites } from "../context/FavoritesContext";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
-import { FaStar, FaRegStar, FaFacebook, FaTwitter, FaWhatsapp, FaUser, FaHeart, FaBrain, FaShoppingCart, FaTrash } from "react-icons/fa";
+import { FaStar, FaRegStar, FaFacebook, FaTwitter, FaWhatsapp, FaUser, FaHeart, FaBrain, FaShoppingCart, FaTrash, FaArrowLeft } from "react-icons/fa";
 import { FaStarHalfAlt } from "react-icons/fa";
 import "./ProductDetail.css";
 import "./Home.css";
 
 function ProductDetail() {
   const { id } = useParams();
+  const location = useLocation();
   const { dispatch } = useCart();
   const { favorites, toggleFavorite } = useFavorites();
   const { user } = useAuth();
@@ -58,11 +59,27 @@ function ProductDetail() {
   };
 
   const handleBack = () => {
-    navigate(-1);
+    if (location.state?.page) {
+      navigate('/', { 
+        state: { 
+          page: location.state.page,
+          category: location.state.category 
+        }
+      });
+    } else {
+      navigate('/');
+    }
   };
 
   const handleReviewSubmit = (e) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast.error("Please sign in to leave a review");
+      navigate("/signin");
+      return;
+    }
+
     if (!userReview.trim()) {
       toast.error("Please enter a review.");
       return;
@@ -70,8 +87,8 @@ function ProductDetail() {
 
     const newReview = {
       id: Date.now(),
-      username: user?.name || "Anonymous",
-      userEmail: user?.email,
+      username: user.name,
+      userEmail: user.email,
       comment: userReview,
       rating: userRating,
     };
@@ -206,7 +223,7 @@ function ProductDetail() {
         onClick={handleBack}
         className="back-button"
       >
-        Back
+        <FaArrowLeft /> Back
       </motion.button>
       <div className="product-detail">
         <motion.div
@@ -276,46 +293,60 @@ function ProductDetail() {
       </div>
       <div className="reviews-section">
         <h2 className="section-title">Customer Reviews</h2>
-        <form onSubmit={handleReviewSubmit} className="review-form">
-          <textarea
-            value={userReview}
-            onChange={(e) => setUserReview(e.target.value)}
-            placeholder="Write your review here..."
-            className="review-textarea"
-            rows="4"
-          />
-          <div className="review-actions">
-            <StarRatingInput />
+        {user ? (
+          <form onSubmit={handleReviewSubmit} className="review-form">
+            <textarea
+              value={userReview}
+              onChange={(e) => setUserReview(e.target.value)}
+              placeholder="Write your review here..."
+              className="review-textarea"
+              rows="4"
+            />
+            <div className="review-actions">
+              <StarRatingInput />
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                type="submit"
+                className="submit-review-button"
+              >
+                Submit Review
+              </motion.button>
+            </div>
+          </form>
+        ) : (
+          <div className="sign-in-prompt">
+            <p>Please sign in to leave a review</p>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              type="submit"
-              className="submit-review-button"
+              onClick={() => navigate("/signin")}
+              className="sign-in-button"
             >
-              Submit Review
+              Sign In
             </motion.button>
           </div>
-        </form>
+        )}
         <div className="reviews-list">
           {reviews.map((review) => (
             <div key={review.id} className="review-card">
               <div className="review-header">
                 <FaUser className="user-icon" />
                 <span className="username">{review.username}</span>
-                {user && review.userEmail === user.email && (
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => handleDeleteReview(review.id)}
-                    className="delete-review-btn"
-                    aria-label="Delete review"
-                  >
-                    <FaTrash className="trash-icon" />
-                  </motion.button>
-                )}
               </div>
-              <div className="review-rating">{renderStars(review.rating)}</div>
-              <p className="review-comment">{review.comment}</p>
+              <div className="review-content">
+                <div className="review-rating">{renderStars(review.rating)}</div>
+                <p className="review-comment">{review.comment}</p>
+              </div>
+              {user && review.userEmail === user.email && (
+                <button
+                  onClick={() => handleDeleteReview(review.id)}
+                  className="delete-review-btn"
+                  aria-label="Delete review"
+                >
+                  <FaTrash className="trash-icon" />
+                </button>
+              )}
             </div>
           ))}
         </div>
