@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from '@tanstack/react-query';
 import { motion } from "framer-motion";
 import Slider from "react-slick";
@@ -16,9 +16,17 @@ function Home() {
   const { dispatch } = useCart();
   const { favorites, toggleFavorite } = useFavorites();
   const { isDarkMode } = useTheme();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const productsPerPage = 9;
+
+  useEffect(() => {
+    if (location.state?.page) {
+      setCurrentPage(location.state.page);
+    }
+  }, [location]);
 
   const {
     data: categoriesData = [],
@@ -92,7 +100,7 @@ function Home() {
     fade: true,
     arrows: false,
     appendDots: (dots) => (
-      <div>
+      <div style={{ position: 'absolute', bottom: '-40px', width: '100%' }}>
         <ul className="slick-dots-custom">{dots}</ul>
       </div>
     ),
@@ -133,7 +141,7 @@ function Home() {
         animate={{ y: 0 }}
         className="page-title gradient-text"
       >
-        Welcome to YourShop
+        Welcome to Orbix
       </motion.h1>
       <motion.div
         className="slider-container"
@@ -190,12 +198,18 @@ function Home() {
             whileHover={{ scale: 1.05, rotateY: 5 }}
           >
             <div className="product-image">
-              <Link to={`/product/${product.id}`}>
+              <Link 
+                to={`/product/${product.id}`}
+                state={{ page: currentPage, category: selectedCategory }}
+              >
                 <img src={product.image} alt={product.title} />
               </Link>
             </div>
             <div className="content">
-              <Link to={`/product/${product.id}`}>
+              <Link 
+                to={`/product/${product.id}`}
+                state={{ page: currentPage, category: selectedCategory }}
+              >
                 <h3 className="product-title neon-effect">{product.title}</h3>
                 <p className="product-price">${product.price.toFixed(2)}</p>
               </Link>
